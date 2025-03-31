@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card shadow" style="width: 100%; max-width: 400px; margin: 2rem auto;">
+        <div class="card-body p-4">
+            <h2 class="text-center mb-4" style="color: #FFFFFF;">
+                <i class="fas fa-sign-in-alt me-2"></i>Вход в систему
+            </h2>
+            
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label" style="color: #FFFFFF;">Логин</label>
+                    <input type="text" name="username" class="form-control" 
+                           style="border-color: #FFFFFF;" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" style="color: #FFFFFF;">Пароль</label>
+                    <input type="password" name="password" class="form-control" 
+                           style="border-color: #FFFFFF;" required>
+                </div>
+                
+                <button type="submit" class="btn w-100 mt-3" 
+                        style="background-color: #808000; color: white;">
+                    <i class="fas fa-sign-in-alt me-2"></i>Войти
+                </button>
+            </form>
+            
+            <div class="text-center mt-3" style="color: #FFFFFF;">
+                Нет аккаунта? <a href="{{ url_for('register') }}" style="color: #FFFFFF; text-decoration: underline;">Зарегистрируйтесь</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

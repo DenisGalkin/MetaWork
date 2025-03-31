@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #808080; color: white;">
+                    <h4>
+                        <i class="fas fa-comments me-2"></i>Чат с {{ recipient.first_name }} {{ recipient.last_name }}
+                        <span class="float-end">
+                            {% if recipient.id in online_users %}
+                            <span class="badge bg-success">online</span>
+                            {% else %}
+                            <span class="badge bg-secondary">offline</span>
+                            {% endif %}
+                        </span>
+                    </h4>
+                </div>
+                
+                <div class="card-body chat-messages" style="height: 400px; overflow-y: auto;">
+                    {% for date, messages_group in messages %}
+                    <div class="date-divider text-center my-3">
+                        <span class="badge bg-secondary">{{ date.strftime('%d %B %Y') }}</span>
+                    </div>
+                    {% for message in messages_group %}
+                    <div class="mb-3 {% if message.sender_id == current_user.id %}text-end{% endif %}">
+                        <div class="d-flex flex-column {% if message.sender_id == current_user.id %}align-items-end{% else %}align-items-start{% endif %}">
+                            <div class="p-3 rounded {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light text-dark{% endif %}" 
+                                 style="max-width: 70%; position: relative;">
+                                {{ message.text }}
+                                <div class="message-footer d-flex justify-content-between align-items-center mt-2" style="font-size: 0.8rem;">
+                                    <span class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                        {{ message.timestamp.strftime('%H:%M') }}
+                                    </span>
+                                    {% if message.sender_id == current_user.id %}
+                                    <span class="read-status ms-2">
+                                        {% if message.read %}
+                                        <i class="fas fa-check-double text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-check text-muted"></i>
+                                        {% endif %}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <small class="text-muted mt-1">
+                                {{ message.sender.first_name }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                
+                <div class="card-footer">
+                    <form id="message-form">
+                        <div class="input-group">
+                            <input type="text" id="message-input" class="form-control" placeholder="Введите сообщение..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+    const recipient = '{{ recipient.username }}';
+    
+    document.getElementById('message-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value.trim();
+        
+        if (message) {
+            socket.emit('private_message', {
+                recipient: recipient,
+                message: message
+            });
+            
+            const messagesDiv = document.querySelector('.chat-messages');
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Проверяем, есть ли уже сегодняшняя дата
+            let dateDiv = document.querySelector('.date-divider');
+            if (!dateDiv || !dateDiv.textContent.includes(dateStr)) {
+                dateDiv = document.createElement('div');
+                dateDiv.className = 'date-divider text-center my-3';
+                dateDiv.innerHTML = `<span class="badge bg-secondary">${dateStr}</span>`;
+                messagesDiv.appendChild(dateDiv);
+            }
+            
+            const newMessage = document.createElement('div');
+            newMessage.className = 'mb-3 text-end';
+            newMessage.innerHTML = `
+                <div class="d-flex flex-column align-items-end">
+                    <div class="p-3 rounded bg-primary text-white" style="max-width: 70%; position: relative;">
+                        ${message}
+                        <div class="message-footer d-flex justify-content-between align-items-center mt-2" style="font-size: 0.8rem;">
+                            <span class="text-white-50">${today.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            <span class="read-status ms-2"><i class="fas fa-check text-muted"></i></span>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-1">Вы</small>
+                </div>
+            `;
+            messagesDiv.appendChild(newMessage);
+            messageInput.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    });
+    
+    socket.on('new_message', function(data) {
+        if (data.sender === recipient) {
+            const messagesDiv = document.querySelector('.chat-messages');
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let dateDiv = document.querySelector('.date-divider');
+            if (!dateDiv || !dateDiv.textContent.includes(dateStr)) {
+                dateDiv = document.createElement('div');
+                dateDiv.className = 'date-divider text-center my-3';
+                dateDiv.innerHTML = `<span class="badge bg-secondary">${dateStr}</span>`;
+                messagesDiv.appendChild(dateDiv);
+            }
+            
+            const newMessage = document.createElement('div');
+            newMessage.className = 'mb-3';
+            newMessage.innerHTML = `
+                <div class="d-flex flex-column align-items-start">
+                    <div class="p-3 rounded bg-light text-dark" style="max-width: 70%; position: relative;">
+                        ${data.message}
+                        <div class="message-footer d-flex justify-content-between align-items-center mt-2" style="font-size: 0.8rem;">
+                            <span class="text-muted">${data.timestamp}</span>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-1">{{ recipient.first_name }}</small>
+                </div>
+            `;
+            messagesDiv.appendChild(newMessage);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            const audio = new Audio('{{ url_for("static", filename="sounds/notification.mp3") }}');
+            audio.play();
+        }
+    });
+    
+    socket.on('messages_read', function(data) {
+        if (data.sender_id === {{ recipient.id }}) {
+            document.querySelectorAll('.read-status i.fa-check').forEach(icon => {
+                icon.classList.remove('fa-check', 'text-muted');
+                icon.classList.add('fa-check-double', 'text-success');
+            });
+        }
+    });
+    
+    socket.on('user_status', function(data) {
+        if (data.user_id === {{ recipient.id }}) {
+            const statusBadge = document.querySelector('.card-header .badge');
+            if (data.status === 'online') {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'online';
+            } else {
+                statusBadge.className = 'badge bg-secondary';
+                statusBadge.textContent = 'offline';
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #b0b0b0; color: #333;">
+                    <h4><i class="fas fa-edit me-2"></i>Редактирование задачи</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.text.label(class="form-label") }}
+                            {{ form.text(class="form-control") }}
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.due_date.label(class="form-label") }}
+                                {{ form.due_date(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.due_time.label(class="form-label") }}
+                                {{ form.due_time(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Сохранить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

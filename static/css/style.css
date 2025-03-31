@@ -1,0 +1,110 @@
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    padding-top: 20px;
+}
+
+.card {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-bottom: 1px solid #333;
+}
+
+.list-group-item {
+    background-color: #252525;
+    border-color: #333;
+    transition: all 0.3s;
+}
+
+.list-group-item:hover {
+    background-color: #2a2a2a;
+}
+
+.form-control {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+.form-control:focus {
+    background-color: #2d2d2d;
+    border-color: #555;
+    box-shadow: 0 0 0 0.25rem rgba(100, 100, 100, 0.25);
+    color: #fff;
+}
+
+.btn-primary {
+    background-color: #3a3a3a;
+    border-color: #444;
+}
+
+.btn-primary:hover {
+    background-color: #4a4a4a;
+    border-color: #555;
+}
+
+.text-muted {
+    color: #b0b0b0 !important;
+}
+
+/* Стили для чата */
+.date-divider {
+    position: relative;
+    z-index: 1;
+}
+
+.date-divider:before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #444;
+    z-index: -1;
+}
+
+.date-divider .badge {
+    padding: 5px 10px;
+    background-color: #333;
+}
+
+.message-footer {
+    opacity: 0.8;
+}
+
+.read-status {
+    font-size: 0.7rem;
+}
+
+/* Анимация для новых сообщений */
+@keyframes highlight {
+    from { background-color: rgba(0, 255, 0, 0.1); }
+    to { background-color: transparent; }
+}
+
+.new-message {
+    animation: highlight 2s;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .list-group-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .btn-group {
+        margin-top: 0.5rem;
+        align-self: flex-end;
+    }
+}

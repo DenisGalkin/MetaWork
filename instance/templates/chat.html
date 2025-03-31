@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #808080; color: white;">
+                    <h4><i class="fas fa-comments me-2"></i>Начать чат</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('chat') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control", placeholder="Введите логин пользователя") }}
+                            {% if form.username.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Найти
+                        </button>
+                    </form>
+
+                    <hr>
+                    <h5>Последние чаты:</h5>
+                    <div class="list-group mt-3">
+                        {% for user in last_chats %}
+                        <a href="{{ url_for('chat_with', username=user.username) }}" 
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                {{ user.first_name }} {{ user.last_name }} (@{{ user.username }})
+                            </div>
+                            <div class="d-flex align-items-center">
+                                {% set unread_count = current_user.get_unread_count(user.id) %}
+                                {% if unread_count > 0 %}
+                                <span class="badge bg-danger rounded-pill me-2">{{ unread_count }}</span>
+                                {% endif %}
+                                {% if user.id in online_users %}
+                                <span class="badge bg-success rounded-pill">online</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">offline</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+    
+    socket.on('update_unread', function(data) {
+        // Обновляем счетчик непрочитанных для конкретного чата
+        const userLinks = document.querySelectorAll('.list-group-item');
+        userLinks.forEach(link => {
+            if (link.href.includes(data.sender_id)) {
+                let badge = link.querySelector('.badge.bg-danger');
+                if (data.count > 0) {
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'badge bg-danger rounded-pill me-2';
+                        link.querySelector('div.d-flex').prepend(badge);
+                    }
+                    badge.textContent = data.count;
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
